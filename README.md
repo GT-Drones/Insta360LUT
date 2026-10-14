@@ -22,7 +22,7 @@ A single-page, in-browser tool for making `.cube` and `.3dl` LUTs from Insta360 
 ## How to use
 
 1. Open the page (or `index.html` locally).
-2. *(Optional)* Load the official I-Log LUT from Insta360's Downloads page.
+2. *(Optional)* Download the official I-Log LUT for your camera from [Insta360's I-Log downloads page](https://www.insta360.com/download/i-log) and load it.
 3. Pick a mode, set your adjustments and watch the preview.
 4. Press **Save as .zip** and load the `.cube` in your editor, with your footage set to I-Log.
 
@@ -55,9 +55,10 @@ Please treat the code accordingly:
 
 ## Credits
 
-- Insta360 *10-bit I-Log White Paper* for the curve and gamut.
+- Insta360 *10-bit I-Log White Paper* for the curve and gamut, and the [official I-Log LUTs](https://www.insta360.com/download/i-log).
 - GoPro Labs' GP-Log2 LUT Generator for the idea.
 - Standard formulas: ITU-R BT.709 and BT.2020, HLG (BT.2100) and PQ (SMPTE ST 2084).
 
 ## License
-MIT. See LICENSE
+
+MIT. See [LICENSE](LICENSE).
