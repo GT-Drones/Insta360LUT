@@ -39,11 +39,6 @@ The I-Log transfer function and BT.2020 gamut come from Insta360's published *10
 - `.3dl` files are written as 10-bit in and out. Dialects vary between programs, so prefer `.cube`.
 - HDR (HLG/PQ) output is untested on a real HDR display.
 - Video preview depends on browser codecs. ProRes only plays in Safari, and HEVC needs system support. Use a still frame instead. Browser-decoded colors are approximate.
-- Not yet validated against real X5 footage.
-
-## Deploy on GitHub Pages
-
-Put `index.html` in the root of a public repo, then go to **Settings → Pages**, choose **Deploy from a branch** (`main`, `/ (root)`) and save. No build step is needed.
 
 ## How AI was used
 
