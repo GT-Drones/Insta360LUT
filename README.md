@@ -60,5 +60,4 @@ Please treat the code accordingly:
 - Standard formulas: ITU-R BT.709 and BT.2020, HLG (BT.2100) and PQ (SMPTE ST 2084).
 
 ## License
-
-Add a license of your choice (for example MIT) before publishing.
+MIT. See LICENSE
