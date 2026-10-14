@@ -15,7 +15,7 @@
 :root[data-theme="dark"]{--bg:#161615;--fg:#ecece8;--mu:#9a9a94;--card:#201f1e;--bd:#3a3936;--ac:#ff8a4c}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:1120px;margin:0 auto;padding:16px}
+main{max-width:1760px;margin:0 auto;padding:16px}
 h1{font-size:20px;margin:4px 0}p.s{color:var(--mu);margin:0 0 14px;font-size:13px}
 .c{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
 label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
@@ -28,10 +28,10 @@ button.g{background:transparent;color:var(--fg);border:1px solid var(--bd)}butto
 .wr{position:relative;line-height:0;margin-top:8px;overflow:hidden;touch-action:pan-y;border-radius:8px}#zi{position:relative;transform-origin:0 0}.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.row input[type=text]{flex:1;min-width:90px;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--fg)}.row button{margin:0;padding:8px 12px;font-size:14px}.wr canvas{display:block}#b{position:absolute;inset:0;height:100%}
 #dv{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 2px #000;pointer-events:none}
 #hist{height:110px;border-radius:6px;margin-top:8px;width:100%}.sc{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.sc canvas{width:100%;height:auto;border-radius:6px;background:#111}.dz.over{outline:2px dashed var(--ac)}#clip{font-size:13px;margin-top:4px}
-@media (max-width:899px){.pvw{margin:0 -8px 12px}}
+@media (max-width:1099px){.pvw{margin:0 -8px 12px}}
 .lay{display:flex;flex-direction:column}.pvw{order:-1;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:10px;margin-bottom:12px}
 a{color:var(--ac)}h2{font-size:17px;margin:0 0 8px}h3{font-size:14px;margin:14px 0 4px}#about p{margin:0 0 6px;font-size:14px;color:var(--mu)}summary.s{cursor:pointer;margin:6px 0}
-@media (min-width:900px){.lay{display:grid;grid-template-columns:minmax(0,1fr) 460px;gap:16px;align-items:start}.pvw{order:0;grid-column:2;grid-row:1;top:12px;max-height:calc(100vh - 24px);overflow:auto;margin-bottom:0}.col{grid-column:1;grid-row:1;min-width:0}}
+@media (min-width:1100px){.lay{display:grid;grid-template-columns:minmax(0,1fr) min(920px,58vw);gap:16px;align-items:start}.pvw{order:0;grid-column:2;grid-row:1;top:12px;max-height:calc(100vh - 24px);overflow:auto;margin-bottom:0}.col{grid-column:1;grid-row:1;min-width:0}}
 #st{font-size:13px;color:var(--mu);margin-top:8px}
 </style></head><body><main>
 <h1>Insta360 I-Log LUT Tool</h1>
@@ -91,7 +91,7 @@ a{color:var(--ac)}h2{font-size:17px;margin:0 0 8px}h3{font-size:14px;margin:14px
 <p>No. This is an independent, unofficial tool and is not affiliated with Insta360 or GoPro. It was written with the help of AI and has not been tested on all footage, so check results before relying on them. Source code and notes are on <a href="https://github.com/gt-drones/Insta360LUT" target="_blank" rel="noopener">GitHub</a>.</p></section>
 </main>
 <script>
-let base=null,img=null,pvAuto=false;const $=id=>document.getElementById(id);
+let base=null,img=null,pvAuto=false,PT=null;const $=id=>document.getElementById(id);
 const dec=v=>{v=Math.max(0,v);return v<0.081?v/4.5:Math.pow((v+0.099)/1.099,1/0.45)};
 const enc=l=>{l=Math.max(0,l);return l<0.018?4.5*l:1.099*Math.pow(l,0.45)-0.099};
 function parse(t){let n=0,dmin=[0,0,0],dmax=[1,1,1],d=[];
@@ -163,9 +163,9 @@ function zip(files){const te=new TextEncoder(),parts=[],cen=[];let off=0;
   cen.push(c.buffer,nb);off+=30+nb.length+d.length}
  const cs=cen.reduce((a,b)=>a+b.byteLength,0),e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
  return new Blob([...parts,...cen,e.buffer],{type:'application/zip'})}
-function preview(){if(!img||!img.width||!img.height)return;const a=$('a'),b=$('b'),s=Math.min(1,480/Math.max(img.width,img.height));
+function preview(hi){if(!img||!img.width||!img.height)return;const H=hi===true;if(!H){clearTimeout(PT);PT=setTimeout(()=>preview(true),350)}const a=$('a'),b=$('b'),s=Math.min(1,(H?800:480)/Math.max(img.width,img.height));
  a.width=b.width=Math.round(img.width*s);a.height=b.height=Math.round(img.height*s);
- const nw=matchMedia('(max-width:899px)').matches;if(!pvAuto){pvAuto=true;if(nw){$('ld').open=false;$('scp').open=false}}
+ const nw=matchMedia('(max-width:1099px)').matches;if(!pvAuto){pvAuto=true;if(nw){$('ld').open=false;$('scp').open=false}}
  $('wr').style.maxWidth=nw?Math.round(innerHeight*0.34*a.width/a.height)+'px':'';$('wr').style.marginLeft=$('wr').style.marginRight=nw?'auto':'';
  a.getContext('2d').drawImage(img,0,0,a.width,a.height);
  const cx=b.getContext('2d');cx.drawImage(img,0,0,b.width,b.height);
