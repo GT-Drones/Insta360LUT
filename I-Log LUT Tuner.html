@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>I-Log LUT Tuner</title>
+<style>
+:root{--bg:#fafaf8;--fg:#1c1c1a;--mu:#6b6b66;--card:#fff;--bd:#dcdcd6;--ac:#d9480f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161615;--fg:#ecece8;--mu:#9a9a94;--card:#201f1e;--bd:#3a3936;--ac:#ff8a4c}}
+:root[data-theme="dark"]{--bg:#161615;--fg:#ecece8;--mu:#9a9a94;--card:#201f1e;--bd:#3a3936;--ac:#ff8a4c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1120px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0}p.s{color:var(--mu);margin:0 0 14px;font-size:13px}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
+input[type=range],select{width:100%}select{padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--fg)}
+.r{display:flex;justify-content:space-between;color:var(--fg)}
+button{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:11px 14px;font-size:15px;font-weight:600;margin:6px 6px 0 0}
+button.g{background:transparent;color:var(--fg);border:1px solid var(--bd)}button:disabled{opacity:.4}
+.chk{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:14px}.chk small{color:var(--mu);display:block}
+.cv{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cv div{font-size:12px;color:var(--mu)}canvas{width:100%;border-radius:8px;background:var(--bg)}
+.wr{position:relative;line-height:0;margin-top:8px;overflow:hidden;touch-action:pan-y;border-radius:8px}#zi{position:relative;transform-origin:0 0}.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.row input[type=text]{flex:1;min-width:90px;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--fg)}.row button{margin:0;padding:8px 12px;font-size:14px}.wr canvas{display:block}#b{position:absolute;inset:0;height:100%}
+#dv{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 2px #000;pointer-events:none}
+#hist{height:110px;border-radius:6px;margin-top:8px;width:100%}.sc{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.sc canvas{width:100%;height:auto;border-radius:6px;background:#111}.dz.over{outline:2px dashed var(--ac)}#clip{font-size:13px;margin-top:4px}
+@media (max-width:899px){.pvw{margin:0 -8px 12px}}
+.lay{display:flex;flex-direction:column}.pvw{order:-1;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:10px;margin-bottom:12px}
+summary.s{cursor:pointer;margin:6px 0}
+@media (min-width:900px){.lay{display:grid;grid-template-columns:minmax(0,1fr) 460px;gap:16px;align-items:start}.pvw{order:0;grid-column:2;grid-row:1;top:12px;max-height:calc(100vh - 24px);overflow:auto;margin-bottom:0}.col{grid-column:1;grid-row:1;min-width:0}}
+#st{font-size:13px;color:var(--mu);margin-top:8px}
+</style></head><body><main>
+<h1>I-Log LUT Tuner</h1>
+<p class="s">Takes Insta360's official I-Log .cube and adds exposure, highlight rolloff, clamping and resizing, like GoPro's GP-Log2 generator.</p>
+
+<div class="lay"><div class="col">
+<div class="c" id="lc"><b>1. Load official LUT</b> (for LUT mode, or to match in direct mode)
+<p class="s" style="margin:4px 0 8px">Download the official I-Log LUT for your camera from Insta360's Downloads page, then pick the .cube here.</p>
+<input type="file" id="lf" accept=".cube,.txt"><div id="st">No LUT loaded.</div><button class="g" id="ft" disabled style="margin-top:8px">Match official LUT</button><div id="fr" class="s" style="margin-top:6px"></div></div>
+
+<div class="c"><b>2. Settings</b>
+<label>Mode</label><select id="md"><option value="lut">Official LUT + adjustments</option><option value="dir">Direct conversion (I-Log curve, no LUT needed)</option></select>
+<div id="dop"><label>Output colorspace</label><select id="oc"><option value="709">Rec.709</option><option value="2020">Rec.2020 (SDR)</option><option value="hlg">Rec.2020 HLG (HDR)</option><option value="pq">Rec.2020 PQ / ST 2084 (HDR)</option></select><p class="s" style="margin:6px 0 0">HDR modes put 100% reflectance at HLG reference white, or about 203 nits for PQ (clipped at 1000 nits). The preview shows the raw HDR signal, so it looks flat on an SDR screen; tag the file as Rec.2020 HLG or PQ in your editor. Converts I-Log (BT.2020) straight to display using the white-paper curve. Tone mapping is adjustable with EV, rolloff, shoulder start and gamma. Or load the official LUT and press Match official LUT to fit them to Insta360's look.</p></div>
+<label>Presets</label><div class="row"><select id="ps" style="flex:1;min-width:120px"></select><button class="g" id="pd">Delete</button></div><div class="row" style="margin-top:6px"><input type="text" id="pn" placeholder="Name for current settings" maxlength="30"><button class="g" id="pv">Save preset</button></div>
+<label>LUT size</label><select id="sz"><option>17</option><option selected>33</option><option>48</option><option>65</option></select>
+<label>Export format</label><select id="ff"><option value="cube">.cube (recommended)</option><option value="3dl">.3dl (10-bit)</option></select>
+<div class="chk"><input type="checkbox" id="ma"><div>Export sizes 17, 33 and 65 together<small>Saved in one .zip with real file extensions. .3dl dialects vary between programs, so prefer .cube if your editor reads it</small></div></div>
+<div id="sl"></div>
+<details style="margin-top:10px"><summary>Lift / gamma / gain</summary><div id="sl2"></div></details>
+<div class="chk"><input type="checkbox" id="pr" checked><div>Apply EV, temperature and tint before the LUT<small>Uses the I-Log curve from Insta360's 10-bit white paper. Turn off if results look wrong, then they run after the LUT in linear Rec.709</small></div></div>
+<div class="chk"><input type="checkbox" id="ro"><div>Highlight rolloff<small>Softly compresses highlights toward 1.0 for easier SDR grading</small></div></div>
+<div class="chk"><input type="checkbox" id="cl"><div>Clamp output to 0–1<small>Leave off for HDR or wide-gamut grading</small></div></div>
+<button class="g" id="rs">Reset all</button>
+<p class="s" style="margin-top:10px">With pre-LUT on, EV and white balance act on scene-linear light before the base LUT. Rolloff runs after it in linear Rec.709; shadow lift, contrast and saturation run on the encoded image.</p></div>
+
+<button id="sv" disabled>Save as .zip</button><button id="cp" class="g" disabled>Copy LUT text</button>
+<p class="s" id="note" style="margin-top:8px"></p>
+</div>
+<aside class="c dz pvw" id="dz"><b>Preview</b>
+<details id="ld" open><summary class="s">Load image or video</summary>
+<input type="file" id="im" accept="image/*" style="margin-top:6px"><span class="s"> or drop an image here</span>
+<div class="row" style="margin-top:6px"><span class="s">Or a video:</span><input type="file" id="vf" accept="video/*"></div>
+<div id="vw" style="display:none"><input type="range" id="vs" min="0" max="1" step="any" value="0" style="margin-top:6px"><div class="s" id="vt"></div></div>
+<button class="g" id="tc" style="margin-top:6px">Test chart</button></details>
+<div class="row" style="margin-top:6px"><button class="g" id="zr">Reset zoom</button><label class="row" style="margin:0;gap:6px;font-size:14px;color:var(--fg)"><input type="checkbox" id="zb"> Zebra on clipped areas</label><span class="s">Pinch or scroll to zoom</span></div>
+<div class="wr" id="wr"><div id="zi"><canvas id="a"></canvas><canvas id="b"></canvas><div id="dv"></div></div></div>
+<input type="range" id="sp" min="0" max="100" value="50" style="margin-top:8px">
+<div class="r s"><span>◀ Original</span><span>With LUT ▶</span></div>
+<div id="clip"></div>
+<details id="scp" open><summary class="s">Scopes</summary>
+<canvas id="hist" width="255" height="128"></canvas><div class="s">RGB parade (graded)</div>
+<div class="sc"><div><canvas id="wf" width="255" height="128"></canvas><div class="s">Luma waveform</div></div><div><canvas id="vc" width="128" height="128"></canvas><div class="s">Vectorscope</div></div></div></details>
+</aside>
+</div>
+</main>
+<script>
+let base=null,img=null,pvAuto=false;const $=id=>document.getElementById(id);
+const dec=v=>{v=Math.max(0,v);return v<0.081?v/4.5:Math.pow((v+0.099)/1.099,1/0.45)};
+const enc=l=>{l=Math.max(0,l);return l<0.018?4.5*l:1.099*Math.pow(l,0.45)-0.099};
+function parse(t){let n=0,dmin=[0,0,0],dmax=[1,1,1],d=[];
+ for(const ln of t.split(/\r?\n/)){const s=ln.trim();if(!s||s[0]=='#')continue;
+  if(s.startsWith('LUT_3D_SIZE'))n=+s.split(/\s+/)[1];
+  else if(s.startsWith('DOMAIN_MIN'))dmin=s.split(/\s+/).slice(1).map(Number);
+  else if(s.startsWith('DOMAIN_MAX'))dmax=s.split(/\s+/).slice(1).map(Number);
+  else if(/^[-\d.]/.test(s)){const p=s.split(/\s+/).map(Number);if(p.length>=3)d.push(p[0],p[1],p[2])}}
+ if(!n||d.length!==n*n*n*3)throw new Error('Not a valid 3D .cube LUT');
+ return{n,dmin,dmax,d:Float32Array.from(d)}}
+function samp(L,r,g,b,o){const n=L.n,m=n-1,c=[r,g,b].map((v,i)=>Math.min(1,Math.max(0,(v-L.dmin[i])/(L.dmax[i]-L.dmin[i])))*m);
+ const x=Math.min(m-1,Math.floor(c[0])),y=Math.min(m-1,Math.floor(c[1])),z=Math.min(m-1,Math.floor(c[2])),fx=c[0]-x,fy=c[1]-y,fz=c[2]-z;
+ const at=(i,j,k)=>((((z+k)*n)+y+j)*n+x+i)*3;let p1,p2,w;
+ if(fx>=fy){if(fy>=fz){p1=at(1,0,0);p2=at(1,1,0);w=[1-fx,fx-fy,fy-fz,fz]}
+  else if(fx>=fz){p1=at(1,0,0);p2=at(1,0,1);w=[1-fx,fx-fz,fz-fy,fy]}
+  else{p1=at(0,0,1);p2=at(1,0,1);w=[1-fz,fz-fx,fx-fy,fy]}}
+ else{if(fx>=fz){p1=at(0,1,0);p2=at(1,1,0);w=[1-fy,fy-fx,fx-fz,fz]}
+  else if(fy>=fz){p1=at(0,1,0);p2=at(0,1,1);w=[1-fy,fy-fz,fz-fx,fx]}
+  else{p1=at(0,0,1);p2=at(0,1,1);w=[1-fz,fz-fy,fy-fx,fx]}}
+ const P=[at(0,0,0),p1,p2,at(1,1,1)],d=L.d;
+ for(let k=0;k<3;k++)o[k]=w[0]*d[P[0]+k]+w[1]*d[P[1]+k]+w[2]*d[P[2]+k]+w[3]*d[P[3]+k]}
+const SL=[['ev','EV compensation',-2,4,0,.1],['ct','Contrast',-50,50,0,1],['sa','Saturation',-100,100,0,1],['tp','Temperature (cool ↔ warm)',-100,100,0,1],['tn','Tint (green ↔ magenta)',-100,100,0,1],['sh','Shadow lift',0,50,0,1],['kn','Shoulder start (with rolloff)',0.2,0.95,0.8,0.01],['to','Gamma (shadow contrast)',-50,50,0,1],['st','Adjustment strength (%)',0,100,100,1],
+['lm','Shadows: brightness',-50,50,0,1],['lt','Shadows: cool ↔ warm',-50,50,0,1],['ln','Shadows: green ↔ magenta',-50,50,0,1],
+['mm','Mids: brightness',-50,50,0,1],['mt','Mids: cool ↔ warm',-50,50,0,1],['mn','Mids: green ↔ magenta',-50,50,0,1],
+['hm','Highlights: brightness',-50,50,0,1],['ht','Highlights: cool ↔ warm',-50,50,0,1],['hn','Highlights: green ↔ magenta',-50,50,0,1]];
+const slh=A=>A.map(([k,n,lo,hi,d,st])=>`<label class="r"><span>${n}</span><span id="v_${k}">${d}</span></label><input type="range" id="${k}" min="${lo}" max="${hi}" step="${st}" value="${d}">`).join('');
+$('sl').innerHTML=slh(SL.slice(0,9));$('sl2').innerHTML=slh(SL.slice(9));
+const V=k=>+$(k).value,clamp=v=>Math.min(1,Math.max(0,v));
+let OV=null;const G=k=>OV&&OV[k]!==undefined?OV[k]:V(k);
+const IA=5.77837328,IB=0.09055934,ID=0.623992,IE=0.280055,IT=0.01,IC=0.154402,IL=0.01104854;
+const ilDec=v=>v<IC?(v-IB)/IA:Math.pow(10,(v-ID)/IE)-IT;
+const ilEnc=l=>l<=IL?IA*l+IB:ID+IE*Math.log10(l+IT);
+function pre3(c,O,u){if(!O.pre){u[0]=c[0];u[1]=c[1];u[2]=c[2];return}for(let i=0;i<3;i++)u[i]=ilEnc(ilDec(c[i])*O.w[i])}
+const hlgEnc=e=>{e=Math.max(0,e);return e<=1/12?Math.sqrt(3*e):0.17883277*Math.log(12*e-0.28466892)+0.55991073};
+const pqEnc=l=>{const y=Math.pow(Math.max(0,l)*0.1,0.1593017578125);return Math.pow((0.8359375+18.8515625*y)/(1+18.6875*y),78.84375)};
+const chn=(m,t,n)=>[m+t+0.5*n,m-n,m-t+0.5*n].map(v=>v/100*0.3);
+function opts(){const F=OV!==null,dir=F||$('md').value==='dir',tp=G('tp')/100*0.5,tn=G('tn')/100*0.3,g=Math.pow(2,G('ev')),ot=F||!dir?'709':$('oc').value;
+ const lg=[chn(G('lm'),G('lt'),G('ln')),chn(G('mm'),G('mt'),G('mn')),chn(G('hm'),G('ht'),G('hn'))];
+ const O={dir,o2020:dir&&ot!=='709',hs:ot==='hlg'?0.265:ot==='pq'?0.203:1,oe:ot==='hlg'?hlgEnc:ot==='pq'?pqEnc:enc,pv:ot==='hlg'?0.38:ot==='pq'?0.41:0.45,
+  pre:$('pr').checked,w:[g*Math.pow(2,tp),g*Math.pow(2,-tn),g*Math.pow(2,-tp)],ro:F||$('ro').checked,cl:F||$('cl').checked,sh:G('sh')/100*0.3,cf:1+G('ct')/100,sa:1+G('sa')/100,kn:G('kn'),gm:1+G('to')/100*0.5,
+  lg,lgOn:lg.some(a=>a.some(v=>v!==0)),str:F?1:G('st')/100};
+ O.O0={...O,w:[1,1,1],ro:false,cl:false,sh:0,cf:1,sa:1,gm:1,lgOn:false,str:1};return O}
+function tail(L,O,out){const e=[0,1,2].map(i=>{let l=L[i];
+  if(l>0&&O.gm!==1)l=Math.pow(l,O.gm);l*=O.hs;if(O.ro){const k=O.kn;if(l>k)l=k+(1-k)*(1-Math.exp(-(l-k)/(1-k)))}
+  let v=O.oe(l);v+=O.sh*Math.pow(Math.max(0,1-v),3);v=(v-O.pv)*O.cf+O.pv;
+  if(O.lgOn){v+=O.lg[0][i]*(1-v);if(v>0)v=Math.pow(v,1/Math.max(0.2,1+2*O.lg[1][i]));v*=1+2*O.lg[2][i]}return v});
+ const y=O.o2020?0.2627*e[0]+0.678*e[1]+0.0593*e[2]:0.2126*e[0]+0.7152*e[1]+0.0722*e[2];
+ for(let i=0;i<3;i++){let v=y+(e[i]-y)*O.sa;out[i]=O.cl?clamp(v):v}}
+function post3(c,O,out){tail([0,1,2].map(i=>dec(c[i])*(O.pre?1:O.w[i])),O,out)}
+const M=[[1.6605,-0.5876,-0.0728],[-0.1246,1.1329,-0.0083],[-0.0182,-0.1006,1.1187]];
+function direct(c,O,out){const l=[0,1,2].map(i=>ilDec(c[i])*O.w[i]);tail(O.o2020?l:M.map(r=>r[0]*l[0]+r[1]*l[1]+r[2]*l[2]),O,out)}
+const GU=[0,0,0],GO=[0,0,0],GA=[0,0,0],GB=[0,0,0];
+function ev1(cc,O,out){if(O.dir)direct(cc,O,out);else{pre3(cc,O,GU);samp(base,GU[0],GU[1],GU[2],GO);post3(GO,O,out)}}
+function grade(cc,O,out){if(O.str>=1){ev1(cc,O,out);return}ev1(cc,O,GA);ev1(cc,O.O0,GB);for(let k=0;k<3;k++)out[k]=GB[k]+(GA[k]-GB[k])*O.str}
+function build(N,fmt){N=N||+$('sz').value;fmt=fmt||$('ff').value;const O=opts(),q=[0,0,0],T=new Float64Array(N*N*N*3);
+ for(let z=0;z<N;z++)for(let y=0;y<N;y++)for(let x=0;x<N;x++){grade([x/(N-1),y/(N-1),z/(N-1)],O,q);const i=((z*N+y)*N+x)*3;T[i]=q[0];T[i+1]=q[1];T[i+2]=q[2]}
+ if(fmt==='3dl'){const mesh=[],L=[];for(let i=0;i<N;i++)mesh.push(Math.round(i*1023/(N-1)));L.push(mesh.join(' '));
+  for(let r=0;r<N;r++)for(let g=0;g<N;g++)for(let b=0;b<N;b++){const i=((b*N+g)*N+r)*3;L.push([0,1,2].map(k=>Math.round(clamp(T[i+k])*1023)).join(' '))}
+  return L.join('\n')+'\n'}
+ const out=[];for(let i=0;i<T.length;i+=3)out.push(T[i].toFixed(6)+' '+T[i+1].toFixed(6)+' '+T[i+2].toFixed(6));
+ return`TITLE "I-Log tuned"\n${O.dir?'# Direct I-Log (BT.2020) to '+(O.o2020?'Rec.2020':'Rec.709')+' conversion, no base LUT':'# Base: official I-Log LUT plus grade adjustments'}\nLUT_3D_SIZE ${N}\nDOMAIN_MIN 0 0 0\nDOMAIN_MAX 1 1 1\n${out.join('\n')}\n`}
+const crcT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=~0;for(let i=0;i<b.length;i++)c=crcT[(c^b[i])&255]^(c>>>8);return(~c)>>>0};
+function zip(files){const te=new TextEncoder(),parts=[],cen=[];let off=0;
+ for(const[n,t]of files){const nb=te.encode(n),d=te.encode(t),cr=crc32(d);
+  const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(12,0x21,true);h.setUint32(14,cr,true);h.setUint32(18,d.length,true);h.setUint32(22,d.length,true);h.setUint16(26,nb.length,true);
+  parts.push(h.buffer,nb,d);
+  const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(14,0x21,true);c.setUint32(16,cr,true);c.setUint32(20,d.length,true);c.setUint32(24,d.length,true);c.setUint16(28,nb.length,true);c.setUint32(42,off,true);
+  cen.push(c.buffer,nb);off+=30+nb.length+d.length}
+ const cs=cen.reduce((a,b)=>a+b.byteLength,0),e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+ return new Blob([...parts,...cen,e.buffer],{type:'application/zip'})}
+function preview(){if(!img||!img.width||!img.height)return;const a=$('a'),b=$('b'),s=Math.min(1,480/Math.max(img.width,img.height));
+ a.width=b.width=Math.round(img.width*s);a.height=b.height=Math.round(img.height*s);
+ const nw=matchMedia('(max-width:899px)').matches;if(!pvAuto){pvAuto=true;if(nw){$('ld').open=false;$('scp').open=false}}
+ $('wr').style.maxWidth=nw?Math.round(innerHeight*0.34*a.width/a.height)+'px':'';$('wr').style.marginLeft=$('wr').style.marginRight=nw?'auto':'';
+ a.getContext('2d').drawImage(img,0,0,a.width,a.height);
+ const cx=b.getContext('2d');cx.drawImage(img,0,0,b.width,b.height);
+ let clip=0;const PW=85,PB=64,PA=new Float32Array(3*PW*PB),WC=255,WA=new Float32Array(WC*PB),VS=new Float32Array(128*128);
+ if(base||opts().dir){const id=cx.getImageData(0,0,b.width,b.height),p=id.data,O=opts(),zb=$('zb').checked,q=[0,0,0],W=b.width;
+  for(let i=0;i<p.length;i+=4){const px=i>>2;grade([p[i]/255,p[i+1]/255,p[i+2]/255],O,q);
+   const r=clamp(q[0]),g=clamp(q[1]),bl=clamp(q[2]);p[i]=255*r;p[i+1]=255*g;p[i+2]=255*bl;
+   const col=Math.min(PW-1,Math.floor((px%W)/W*PW));PA[col*PB+Math.min(PB-1,Math.floor(r*PB))]++;PA[(PW+col)*PB+Math.min(PB-1,Math.floor(g*PB))]++;PA[(2*PW+col)*PB+Math.min(PB-1,Math.floor(bl*PB))]++;
+   const yy=0.2126*r+0.7152*g+0.0722*bl,wc=Math.min(WC-1,Math.floor((px%W)/W*WC));WA[wc*PB+Math.min(PB-1,Math.floor(yy*PB))]++;
+   VS[Math.min(127,Math.floor((0.5-(r-yy)/1.5748)*127))*128+Math.min(127,Math.floor(((bl-yy)/1.8556+0.5)*127))]++;
+   if(Math.max(r,g,bl)>=0.98){clip++;if(zb&&((px%W+Math.floor(px/W))>>3&1)){p[i]=255;p[i+1]=40;p[i+2]=40}}}
+  cx.putImageData(id,0,0)}
+ const hc=$('hist').getContext('2d'),m=Math.max(...PA,1),CL=[[255,70,70],[70,255,70],[90,130,255]];
+ hc.fillStyle='#111';hc.fillRect(0,0,255,128);
+ for(let c=0;c<3;c++)for(let x=0;x<PW;x++)for(let y=0;y<PB;y++){const v=PA[(c*PW+x)*PB+y];if(v>0){hc.fillStyle=`rgba(${CL[c]},${Math.min(1,Math.sqrt(v/m)*1.8)})`;hc.fillRect(c*PW+x,126-y*2,1,2)}}
+ const wc2=$('wf').getContext('2d'),wm=Math.max(...WA,1);wc2.fillStyle='#111';wc2.fillRect(0,0,255,128);
+ for(let x=0;x<WC;x++)for(let y=0;y<PB;y++){const v=WA[x*PB+y];if(v>0){wc2.fillStyle=`rgba(230,230,230,${Math.min(1,Math.sqrt(v/wm)*1.8)})`;wc2.fillRect(x,126-y*2,1,2)}}
+ const vc=$('vc').getContext('2d'),vm=Math.max(...VS,1);vc.fillStyle='#111';vc.fillRect(0,0,128,128);
+ for(let i=0;i<VS.length;i++){const v=VS[i];if(v>0){vc.fillStyle=`rgba(230,230,230,${Math.min(1,Math.sqrt(v/vm)*2)})`;vc.fillRect(i%128,(i/128)|0,1,1)}}
+ vc.strokeStyle='rgba(255,255,255,.3)';vc.beginPath();vc.moveTo(64,0);vc.lineTo(64,128);vc.moveTo(0,64);vc.lineTo(128,64);vc.arc(64,64,63,0,7);vc.stroke();
+ [[1,0,0,'#ff4646'],[0,1,0,'#46ff46'],[0,0,1,'#5a82ff'],[0,1,1,'#46ffff'],[1,0,1,'#ff46ff'],[1,1,0,'#ffff46']].forEach(([r,g,b,c])=>{const R=r*.75,G=g*.75,B=b*.75,Y=.2126*R+.7152*G+.0722*B;vc.strokeStyle=c;vc.strokeRect((B-Y)/1.8556*127+63.5-3,(0.5-(R-Y)/1.5748)*127-3,6,6)})
+ const pc=100*clip/(b.width*b.height);
+ $('clip').textContent=(base||$('md').value==='dir')?(pc>1?`⚠ ${pc.toFixed(1)}% of pixels are at or near clipping`:`Clipping: ${pc.toFixed(1)}% of pixels`):'Load a LUT to see the graded side.';
+ split()}
+function split(){const x=$('sp').value;$('b').style.clipPath=`inset(0 0 0 ${x}%)`;$('dv').style.left=x+'%'}
+function loadImg(f){if(!f||!f.type.startsWith('image/'))return;const r=new FileReader();r.onload=()=>{const i=new Image();i.onload=()=>{img=i;preview()};i.src=r.result};r.readAsDataURL(f)}
+let vid=null;
+function loadVideo(f){if(!f)return;if(vid){try{URL.revokeObjectURL(vid.src)}catch(e){}vid.remove()}
+ const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.style.cssText='position:fixed;width:1px;height:1px;opacity:0;pointer-events:none';document.body.appendChild(v);
+ $('vw').style.display='';$('vt').textContent='Loading video…';let ok=false;
+ const fail=()=>{if(!ok)$('vt').textContent='Could not load this video here (the browser may not decode HEVC, or video loading is blocked). Export a still frame instead.'};
+ v.onloadedmetadata=()=>{ok=true;if(!v.videoWidth){$('vs').style.display='none';$('vt').textContent="This browser can read the file's length but can't decode its video (ProRes only plays in Safari, and HEVC needs system support). Export a still frame as PNG or JPG, or convert the clip to H.264, then load that.";return}$('vs').style.display='';vid=v;$('vs').max=v.duration||1;$('vs').value=0;vt(0);v.currentTime=Math.min(0.05,v.duration||0)};
+ v.onseeked=()=>{if(!v.videoWidth)return;const s=Math.min(1,960/Math.max(v.videoWidth,v.videoHeight)),c=document.createElement('canvas');c.width=Math.round(v.videoWidth*s);c.height=Math.round(v.videoHeight*s);c.getContext('2d').drawImage(v,0,0,c.width,c.height);img=c;preview()};
+ v.onerror=fail;setTimeout(fail,6000);v.src=URL.createObjectURL(f)}
+const vt=t=>{$('vt').textContent=`Frame at ${t.toFixed(2)}s of ${(vid?vid.duration:0).toFixed(1)}s. Browsers decode 8-bit and tag I-Log as Rec.709, so colors in this preview are approximate.`};
+$('vf').onchange=e=>loadVideo(e.target.files[0]);
+$('vs').oninput=()=>{if(vid){const t=+$('vs').value;vt(t);vid.currentTime=t}};
+$('lf').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+ try{base=parse(await f.text());const t=[0,0,0],cv=k=>{samp(base,k,k,k,t);return t[1].toFixed(3)};$('st').textContent=`Loaded ${f.name} (${base.n}³). Curve check, LUT output at I-Log 0% / 18% gray / 2200%: ${cv(0.0905593)} / ${cv(0.422003)} / ${cv(1)}. Roughly 0 / 0.4–0.5 / 1 means the curve matches.`;syncMode();preview()}
+ catch(x){base=null;$('st').textContent='Error: '+x.message;syncMode()}};
+const BP={'Neutral':{},'Daylight':{ev:.3,ct:10,sa:10,ro:1},'Low light':{ev:1.5,sh:15,ct:5,ro:1},'Punchy':{ct:25,sa:25,ro:1},'Flat':{ct:-20,sa:-15,sh:10}};
+let UP={};try{UP=JSON.parse(localStorage.getItem('ilog_presets')||'{}')}catch(e){}
+function fillPs(sel){const s=$('ps');s.innerHTML='';const add=(t,v)=>{const o=document.createElement('option');o.value=v;o.textContent=t;s.appendChild(o)};
+ add('Choose a preset…','');Object.keys(BP).forEach(k=>add(k,k));Object.keys(UP).forEach(k=>add('★ '+k,'u:'+k));s.value=sel||''}
+function setVals(p){SL.forEach(([k,,,,d])=>$(k).value=p[k]??d);$('ro').checked=!!p.ro;$('cl').checked=!!p.cl;upd()}
+function saveUP(){try{localStorage.setItem('ilog_presets',JSON.stringify(UP))}catch(e){$('note').textContent='Presets could not be saved in this browser.'}}
+$('ps').onchange=()=>{const v=$('ps').value;if(!v)return;setVals(v.startsWith('u:')?UP[v.slice(2)]:BP[v])};
+$('pv').onclick=()=>{const n=$('pn').value.trim();if(!n||n in BP||n==='__proto__'){$('note').textContent='Enter a new name (built-in names are reserved).';return}
+ const p={ro:$('ro').checked,cl:$('cl').checked};SL.forEach(([k])=>p[k]=V(k));UP[n]=p;saveUP();fillPs('u:'+n);$('pn').value='';$('note').textContent='Saved preset "'+n+'".'};
+$('pd').onclick=()=>{const v=$('ps').value;if(v.startsWith('u:')){delete UP[v.slice(2)];saveUP();fillPs()}};
+fillPs();
+$('tc').onclick=()=>{const c=document.createElement('canvas');c.width=640;c.height=360;const x=c.getContext('2d');
+ for(let i=0;i<21;i++){const v=Math.round(255*i/20);x.fillStyle=`rgb(${v},${v},${v})`;x.fillRect(i*640/21,0,640/21+1,150)}
+ const cs=['#ff0000','#00ff00','#0000ff','#00ffff','#ff00ff','#ffff00','#c8967a','#7a96c8'];
+ cs.forEach((h,i)=>{x.fillStyle=h;x.fillRect(i*80,150,80,110)});
+ const g=x.createLinearGradient(0,0,640,0);g.addColorStop(0,'#000');g.addColorStop(1,'#fff');x.fillStyle=g;x.fillRect(0,260,640,100);
+ const i=new Image();i.onload=()=>{img=i;preview()};i.src=c.toDataURL()};
+$('zb').oninput=preview;
+const FS=[['ev',.5],['kn',.1],['to',10],['ct',10],['sa',10],['sh',5]];
+function runFit(){const Q=[],C=[];for(let t=-6.5;t<=6.6;t++){const v=ilEnc(0.18*Math.pow(2,t));Q.push([v,v,v])}
+ [[.3,.05,.05],[.05,.3,.05],[.05,.05,.3],[.05,.3,.3],[.3,.05,.3],[.3,.3,.05],[.35,.2,.15],[.15,.2,.35],[.8,.2,.2],[.2,.8,.2],[.2,.2,.8]].forEach(t=>C.push(t.map(ilEnc)));
+ const o=[0,0,0],q=[0,0,0],tg=A=>A.map(v=>{samp(base,v[0],v[1],v[2],o);return o.map(clamp)});const TQ=tg(Q),TC=tg(C);
+ const err=x=>{OV={ev:x[0],kn:x[1],to:x[2],ct:x[3],sa:x[4],sh:x[5],tp:0,tn:0};const O=opts();
+  const e=(A,T)=>{let t=0;A.forEach((v,i)=>{direct(v,O,q);for(let k=0;k<3;k++)t+=(q[k]-T[i][k])**2});return t/(A.length*3)};
+  const r=[e(Q,TQ),e(C,TC)];OV=null;return r},cost=x=>{const r=err(x);return 2*r[0]+r[1]};
+ const lo=FS.map(([k])=>SL.find(z=>z[0]===k)[2]),hi=FS.map(([k])=>SL.find(z=>z[0]===k)[3]);
+ let x=[0,0.8,0,0,0,0],st=FS.map(f=>f[1]),best=cost(x);
+ for(let it=0;it<200&&st[0]>0.02;it++){let imp=false;
+  for(let i=0;i<6;i++)for(const d of[1,-1]){const y=x.slice();y[i]=Math.min(hi[i],Math.max(lo[i],y[i]+d*st[i]));const c=cost(y);if(c<best-1e-9){x=y;best=c;imp=true}}
+  if(!imp)st=st.map(v=>v/2)}
+ const r=err(x);return{x,en:Math.sqrt(r[0]),ec:Math.sqrt(r[1])}}
+$('ft').onclick=()=>{if(!base)return;$('fr').textContent='Fitting…';setTimeout(()=>{const r=runFit();
+ SL.forEach(([k])=>{const i=FS.findIndex(f=>f[0]===k);$(k).value=i>=0?r.x[i]:0});
+ $('ro').checked=$('cl').checked=true;$('md').value='dir';$('oc').value='709';syncMode();upd();
+ const v=(r.ec<0.03?'Colors fit well, so the BT.2020 gamut looks consistent with your LUT.':'Colors differ noticeably: the gamut, or the LUT\'s own hue handling, may differ.')+(r.en<0.02?' Grays fit well.':' Grays fit poorly: the LUT\'s tone curve is outside what these controls can reproduce.');
+ $('fr').textContent=`Direct mode now set to reproduce the official look. Neutral error ${r.en.toFixed(3)}, color error ${r.ec.toFixed(3)} (RMS, 0–1 scale). ${v} This cannot confirm the I-Log curve itself, because the tone controls can absorb small curve differences.`},30)};
+function syncMode(){const d=$('md').value==='dir';$('dop').style.display=d?'':'none';$('pr').parentElement.style.display=d?'none':'';$('ft').disabled=!base;$('sv').disabled=$('cp').disabled=!(base||d)}
+$('md').oninput=$('oc').oninput=()=>{syncMode();preview()};syncMode();
+let Z=1,tx=0,ty=0;const wr=$('wr');
+function zap(){const w=wr.clientWidth,h=wr.clientHeight;Z=Math.min(8,Math.max(1,Z));tx=Math.min(0,Math.max(w*(1-Z),tx));ty=Math.min(0,Math.max(h*(1-Z),ty));
+ $('zi').style.transform=`translate(${tx}px,${ty}px) scale(${Z})`;wr.style.touchAction=Z>1?'none':'pan-y'}
+function zoomAt(cx,cy,nz){const px=(cx-tx)/Z,py=(cy-ty)/Z;Z=Math.min(8,Math.max(1,nz));tx=cx-px*Z;ty=cy-py*Z;zap()}
+$('zr').onclick=()=>{Z=1;tx=ty=0;zap()};wr.ondblclick=$('zr').onclick;
+wr.addEventListener('wheel',e=>{e.preventDefault();const r=wr.getBoundingClientRect();zoomAt(e.clientX-r.left,e.clientY-r.top,Z*(e.deltaY<0?1.15:1/1.15))},{passive:false});
+let t0=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+wr.addEventListener('touchstart',e=>{t0={d:e.touches.length>1?dist(e.touches):0,z:Z,x:e.touches[0].clientX,y:e.touches[0].clientY}},{passive:true});
+wr.addEventListener('touchmove',e=>{if(!t0)return;const r=wr.getBoundingClientRect();
+ if(e.touches.length>1){e.preventDefault();if(!t0.d){t0.d=dist(e.touches);t0.z=Z}const cx=(e.touches[0].clientX+e.touches[1].clientX)/2-r.left,cy=(e.touches[0].clientY+e.touches[1].clientY)/2-r.top;zoomAt(cx,cy,t0.z*dist(e.touches)/t0.d)}
+ else if(Z>1){e.preventDefault();tx+=e.touches[0].clientX-t0.x;ty+=e.touches[0].clientY-t0.y;t0.x=e.touches[0].clientX;t0.y=e.touches[0].clientY;zap()}},{passive:false});
+wr.addEventListener('touchend',()=>{t0=null});
+let md=null;wr.addEventListener('mousedown',e=>{if(Z>1)md={x:e.clientX,y:e.clientY}});
+window.addEventListener('mousemove',e=>{if(!md)return;tx+=e.clientX-md.x;ty+=e.clientY-md.y;md={x:e.clientX,y:e.clientY};zap()});
+window.addEventListener('mouseup',()=>{md=null});
+$('im').onchange=e=>loadImg(e.target.files[0]);
+$('sp').oninput=split;
+['dragover','dragenter'].forEach(t=>$('dz').addEventListener(t,e=>{e.preventDefault();$('dz').classList.add('over')}));
+['dragleave','drop'].forEach(t=>$('dz').addEventListener(t,e=>{e.preventDefault();$('dz').classList.remove('over')}));
+$('dz').addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('video/'))loadVideo(f);else loadImg(f)});
+const upd=()=>{SL.forEach(([k])=>{const v=V(k);$('v_'+k).textContent=(v>0&&['ev','ct','sa','tp','tn','to','lm','lt','ln','mm','mt','mn','hm','ht','hn'].includes(k)?'+':'')+(k==='ev'?v.toFixed(1):k==='kn'?v.toFixed(2):v)});preview()};
+SL.forEach(([k])=>$(k).oninput=upd);['ro','cl','pr'].forEach(k=>$(k).oninput=preview);
+$('rs').onclick=()=>{SL.forEach(([k,,,,d])=>$(k).value=d);$('ro').checked=$('cl').checked=false;upd()};
+$('cp').onclick=async()=>{try{await navigator.clipboard.writeText(build());$('note').textContent='Copied. Paste into a text file and name it .'+$('ff').value+'.'}catch(e){$('note').textContent='Copy blocked here; use Save instead.'}};
+$('sv').onclick=async()=>{const dl=await claude.use('downloads');
+ if(!dl){$('note').textContent='Saving is unavailable in this view; use Copy instead.';return}
+ $('note').textContent='Building…';await new Promise(r=>setTimeout(r,20));
+ try{const f=$('ff').value,sizes=$('ma').checked?[17,33,65]:[+$('sz').value];
+  await dl.save({filename:'ilog_lut.zip',data:zip(sizes.map(n=>[`ilog_tuned_${n}.${f}`,build(n,f)]))});
+  $('note').textContent='Saved ilog_lut.zip with '+sizes.map(n=>`ilog_tuned_${n}.${f}`).join(', ')+'.'}
+ catch(e){$('note').textContent=e.code==='declined'?'':'Save failed ('+(e.code||e.message)+'). Try Copy instead.'}};
+</script></body></html>
