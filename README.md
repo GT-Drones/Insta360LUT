@@ -17,7 +17,8 @@ A single-page, in-browser tool for making `.cube` and `.3dl` LUTs from Insta360 
 
 - EV, temperature and tint applied in scene-linear light *before* the base LUT, like GoPro's generator.
 - **Match official LUT:** fits the direct-mode controls to Insta360's official look and reports how close it got.
-- Adjustment strength slider, presets (saved in your browser), and adjustable highlight shoulder and gamma.
+- Adjustment strength slider, presets (saved in your browser), adjustable highlight shoulder and gamma, and tone-curve presets for direct mode.
+- A full/legal range input switch for editors that pass video-range values into the LUT.
 - Live preview on a still image, a video frame or a built-in test chart, with a before/after split, zebra clipping overlay, zoom, RGB parade, luma waveform and vectorscope.
 - Export as `.cube` or `.3dl`, one size or 17/33/65 together, in a `.zip` with real file extensions.
 
@@ -34,11 +35,16 @@ The I-Log transfer function and BT.2020 gamut come from Insta360's published *10
 
 ## Known limitations
 
-- The white paper is for Insta360's 10-bit I-Log. It has **not** been confirmed that every camera, including the X5, uses exactly this curve. The *Match official LUT* check can detect gamut mismatches but cannot prove the curve is correct, because the tone controls can absorb small differences.
+- The curve comes from Insta360's 10-bit I-Log white paper, which does not explicitly list every camera. The author has checked it on X5 ProRes I-Log footage and it appears to work; other cameras are unconfirmed. The *Match official LUT* check can detect gamut mismatches but cannot prove the curve is correct, because the tone controls can absorb small differences.
 - Direct mode uses a simple tone mapping. It will not look identical to Insta360's official LUT unless you use *Match official LUT*.
 - `.3dl` files are written as 10-bit in and out. Dialects vary between programs, so prefer `.cube`.
 - HDR (HLG/PQ) output is untested on a real HDR display.
 - Video preview depends on browser codecs. ProRes only plays in Safari, and HEVC needs system support. Use a still frame instead. Browser-decoded colors are approximate.
+- Only checked by the author on X5 ProRes footage so far; not tested across many cameras or editors.
+
+## Deploy on GitHub Pages
+
+Put `index.html` in the root of a public repo, then go to **Settings → Pages**, choose **Deploy from a branch** (`main`, `/ (root)`) and save. No build step is needed.
 
 ## How AI was used
 
@@ -46,7 +52,7 @@ This tool was written with **Claude**, an AI assistant made by Anthropic, in a s
 
 Please treat the code accordingly:
 
-- The colour maths has been tested with scripts, **not** against real footage, an HDR display or a range of browsers.
+- The colour maths was tested with scripts, and the author has checked the result on X5 footage. It has **not** been tested on an HDR display or across a range of browsers and editors.
 - Slider ranges, preset values and scope behaviour are design choices that have not been tuned by experts.
 - Review the output on your own footage before relying on it for client work, and report any problems.
 

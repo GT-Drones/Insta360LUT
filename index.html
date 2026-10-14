@@ -45,10 +45,12 @@ a{color:var(--ac)}h2{font-size:17px;margin:0 0 8px}h3{font-size:14px;margin:14px
 <div class="c"><b>2. Settings</b>
 <label>Mode</label><select id="md"><option value="lut">Official LUT + adjustments</option><option value="dir">Direct conversion (I-Log curve, no LUT needed)</option></select>
 <div id="dop"><label>Output colorspace</label><select id="oc"><option value="709">Rec.709</option><option value="2020">Rec.2020 (SDR)</option><option value="hlg">Rec.2020 HLG (HDR)</option><option value="pq">Rec.2020 PQ / ST 2084 (HDR)</option></select><p class="s" style="margin:6px 0 0">HDR modes put 100% reflectance at HLG reference white, or about 203 nits for PQ (clipped at 1000 nits). The preview shows the raw HDR signal, so it looks flat on an SDR screen; tag the file as Rec.2020 HLG or PQ in your editor. Converts I-Log (BT.2020) straight to display using the white-paper curve. Tone mapping is adjustable with EV, rolloff, shoulder start and gamma. Or load the official LUT and press Match official LUT to fit them to Insta360's look.</p></div>
+<label>Input levels</label><select id="rg"><option value="full">Full range (0–1023)</option><option value="legal">Legal / video range (64–940)</option></select><p class="s" style="margin:6px 0 0">Choose Legal if blacks look lifted or washed out in your editor, because it is passing video-range values into the LUT.</p>
 <label>Presets</label><div class="row"><select id="ps" style="flex:1;min-width:120px"></select><button class="g" id="pd">Delete</button></div><div class="row" style="margin-top:6px"><input type="text" id="pn" placeholder="Name for current settings" maxlength="30"><button class="g" id="pv">Save preset</button></div>
 <label>LUT size</label><select id="sz"><option>17</option><option selected>33</option><option>48</option><option>65</option></select>
 <label>Export format</label><select id="ff"><option value="cube">.cube (recommended)</option><option value="3dl">.3dl (10-bit)</option></select>
 <div class="chk"><input type="checkbox" id="ma"><div>Export sizes 17, 33 and 65 together<small>Saved in one .zip with real file extensions. .3dl dialects vary between programs, so prefer .cube if your editor reads it</small></div></div>
+<div id="tcw"><label>Tone curve preset (direct mode)</label><select id="tcp"><option value="">Choose a tone curve…</option></select><p class="s" style="margin:6px 0 0">Sets EV, rolloff, shoulder, gamma, contrast and shadow lift, keeping mid-gray near 42%. Color and white balance are left alone.</p></div>
 <div id="sl"></div>
 <details style="margin-top:10px"><summary>Lift / gamma / gain</summary><div id="sl2"></div></details>
 <div class="chk"><input type="checkbox" id="pr" checked><div>Apply EV, temperature and tint before the LUT<small>Uses the I-Log curve from Insta360's 10-bit white paper. Turn off if results look wrong, then they run after the LUT in linear Rec.709</small></div></div>
@@ -82,7 +84,7 @@ a{color:var(--ac)}h2{font-size:17px;margin:0 0 8px}h3{font-size:14px;margin:14px
 <h3>How do I use it?</h3>
 <p>Optionally load the official I-Log LUT, choose a mode, adjust the sliders while watching the preview and scopes, then press Save as .zip and load the .cube in your editor. Set your footage to I-Log first.</p>
 <h3>Does it work with the Insta360 X5?</h3>
-<p>The curve and color gamut in this tool come from Insta360's published 10-bit I-Log white paper, which covers the Luna series and other newer cameras. Whether the X5's I-Log uses exactly the same curve has not been confirmed. If you have the official LUT for your camera, load it and press Match official LUT to see how closely they agree, and check the result on your own footage.</p>
+<p>The curve and color gamut in this tool come from Insta360's published 10-bit I-Log white paper, which covers the Luna series and other newer cameras. The author has checked it on Insta360 X5 ProRes I-Log footage and the curve appears to work. Insta360's paper does not list every camera, so if you have the official LUT for yours, load it and press Match official LUT to see how closely they agree, and check the result on your own footage.</p>
 <h3>Where do I get the official Insta360 I-Log LUTs?</h3>
 <p>From <a href="https://www.insta360.com/download/i-log" target="_blank" rel="noopener">Insta360's I-Log downloads page</a>.</p>
 <h3>Is my footage uploaded?</h3>
@@ -131,7 +133,7 @@ const chn=(m,t,n)=>[m+t+0.5*n,m-n,m-t+0.5*n].map(v=>v/100*0.3);
 function opts(){const F=OV!==null,dir=F||$('md').value==='dir',tp=G('tp')/100*0.5,tn=G('tn')/100*0.3,g=Math.pow(2,G('ev')),ot=F||!dir?'709':$('oc').value;
  const lg=[chn(G('lm'),G('lt'),G('ln')),chn(G('mm'),G('mt'),G('mn')),chn(G('hm'),G('ht'),G('hn'))];
  const O={dir,o2020:dir&&ot!=='709',hs:ot==='hlg'?0.265:ot==='pq'?0.203:1,oe:ot==='hlg'?hlgEnc:ot==='pq'?pqEnc:enc,pv:ot==='hlg'?0.38:ot==='pq'?0.41:0.45,
-  pre:$('pr').checked,w:[g*Math.pow(2,tp),g*Math.pow(2,-tn),g*Math.pow(2,-tp)],ro:F||$('ro').checked,cl:F||$('cl').checked,sh:G('sh')/100*0.3,cf:1+G('ct')/100,sa:1+G('sa')/100,kn:G('kn'),gm:1+G('to')/100*0.5,
+  rg:!F&&$('rg').value==='legal',pre:$('pr').checked,w:[g*Math.pow(2,tp),g*Math.pow(2,-tn),g*Math.pow(2,-tp)],ro:F||$('ro').checked,cl:F||$('cl').checked,sh:G('sh')/100*0.3,cf:1+G('ct')/100,sa:1+G('sa')/100,kn:G('kn'),gm:1+G('to')/100*0.5,
   lg,lgOn:lg.some(a=>a.some(v=>v!==0)),str:F?1:G('st')/100};
  O.O0={...O,w:[1,1,1],ro:false,cl:false,sh:0,cf:1,sa:1,gm:1,lgOn:false,str:1};return O}
 function tail(L,O,out){const e=[0,1,2].map(i=>{let l=L[i];
@@ -145,7 +147,7 @@ const M=[[1.6605,-0.5876,-0.0728],[-0.1246,1.1329,-0.0083],[-0.0182,-0.1006,1.11
 function direct(c,O,out){const l=[0,1,2].map(i=>ilDec(c[i])*O.w[i]);tail(O.o2020?l:M.map(r=>r[0]*l[0]+r[1]*l[1]+r[2]*l[2]),O,out)}
 const GU=[0,0,0],GO=[0,0,0],GA=[0,0,0],GB=[0,0,0];
 function ev1(cc,O,out){if(O.dir)direct(cc,O,out);else{pre3(cc,O,GU);samp(base,GU[0],GU[1],GU[2],GO);post3(GO,O,out)}}
-function grade(cc,O,out){if(O.str>=1){ev1(cc,O,out);return}ev1(cc,O,GA);ev1(cc,O.O0,GB);for(let k=0;k<3;k++)out[k]=GB[k]+(GA[k]-GB[k])*O.str}
+const GR=[0,0,0];function grade(cc,O,out){if(O.rg){for(let i=0;i<3;i++)GR[i]=(cc[i]*1023-64)/876;cc=GR}if(O.str>=1){ev1(cc,O,out);return}ev1(cc,O,GA);ev1(cc,O.O0,GB);for(let k=0;k<3;k++)out[k]=GB[k]+(GA[k]-GB[k])*O.str}
 function build(N,fmt){N=N||+$('sz').value;fmt=fmt||$('ff').value;const O=opts(),q=[0,0,0],T=new Float64Array(N*N*N*3);
  for(let z=0;z<N;z++)for(let y=0;y<N;y++)for(let x=0;x<N;x++){grade([x/(N-1),y/(N-1),z/(N-1)],O,q);const i=((z*N+y)*N+x)*3;T[i]=q[0];T[i+1]=q[1];T[i+2]=q[2]}
  if(fmt==='3dl'){const mesh=[],L=[];for(let i=0;i<N;i++)mesh.push(Math.round(i*1023/(N-1)));L.push(mesh.join(' '));
@@ -224,6 +226,9 @@ $('tc').onclick=()=>{const c=document.createElement('canvas');c.width=640;c.heig
  const g=x.createLinearGradient(0,0,640,0);g.addColorStop(0,'#000');g.addColorStop(1,'#fff');x.fillStyle=g;x.fillRect(0,260,640,100);
  const i=new Image();i.onload=()=>{img=i;preview()};i.src=c.toDataURL()};
 $('zb').oninput=preview;
+const TP={'Linear (no rolloff)':{ro:0,ev:0,kn:.8,to:0,ct:0,sh:0},'Soft filmic':{ro:1,ev:.2,kn:.55,to:8,ct:8,sh:4},'Medium filmic':{ro:1,ev:.3,kn:.45,to:18,ct:18,sh:6},'Contrasty filmic':{ro:1,ev:.4,kn:.35,to:28,ct:32,sh:0},'Flat (grade later)':{ro:1,ev:-.2,kn:.65,to:-12,ct:-18,sh:10}};
+Object.keys(TP).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=k;$('tcp').appendChild(o)});
+$('tcp').onchange=()=>{const p=TP[$('tcp').value];if(!p)return;['ev','kn','to','ct','sh'].forEach(k=>$(k).value=p[k]);$('ro').checked=!!p.ro;upd()};
 const FS=[['ev',.5],['kn',.1],['to',10],['ct',10],['sa',10],['sh',5]];
 function runFit(){const Q=[],C=[];for(let t=-6.5;t<=6.6;t++){const v=ilEnc(0.18*Math.pow(2,t));Q.push([v,v,v])}
  [[.3,.05,.05],[.05,.3,.05],[.05,.05,.3],[.05,.3,.3],[.3,.05,.3],[.3,.3,.05],[.35,.2,.15],[.15,.2,.35],[.8,.2,.2],[.2,.8,.2],[.2,.2,.8]].forEach(t=>C.push(t.map(ilEnc)));
@@ -242,7 +247,7 @@ $('ft').onclick=()=>{if(!base)return;$('fr').textContent='Fitting…';setTimeout
  $('ro').checked=$('cl').checked=true;$('md').value='dir';$('oc').value='709';syncMode();upd();
  const v=(r.ec<0.03?'Colors fit well, so the BT.2020 gamut looks consistent with your LUT.':'Colors differ noticeably: the gamut, or the LUT\'s own hue handling, may differ.')+(r.en<0.02?' Grays fit well.':' Grays fit poorly: the LUT\'s tone curve is outside what these controls can reproduce.');
  $('fr').textContent=`Direct mode now set to reproduce the official look. Neutral error ${r.en.toFixed(3)}, color error ${r.ec.toFixed(3)} (RMS, 0–1 scale). ${v} This cannot confirm the I-Log curve itself, because the tone controls can absorb small curve differences.`},30)};
-function syncMode(){const d=$('md').value==='dir';$('dop').style.display=d?'':'none';$('pr').parentElement.style.display=d?'none':'';$('ft').disabled=!base;$('sv').disabled=$('cp').disabled=!(base||d)}
+function syncMode(){const d=$('md').value==='dir';$('dop').style.display=d?'':'none';$('pr').parentElement.style.display=d?'none':'';$('ft').disabled=!base;$('tcw').style.display=d?'':'none';$('sv').disabled=$('cp').disabled=!(base||d)}
 $('md').oninput=$('oc').oninput=()=>{syncMode();preview()};syncMode();
 let Z=1,tx=0,ty=0;const wr=$('wr');
 function zap(){const w=wr.clientWidth,h=wr.clientHeight;Z=Math.min(8,Math.max(1,Z));tx=Math.min(0,Math.max(w*(1-Z),tx));ty=Math.min(0,Math.max(h*(1-Z),ty));
@@ -265,8 +270,8 @@ $('sp').oninput=split;
 ['dragleave','drop'].forEach(t=>$('dz').addEventListener(t,e=>{e.preventDefault();$('dz').classList.remove('over')}));
 $('dz').addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('video/'))loadVideo(f);else loadImg(f)});
 const upd=()=>{SL.forEach(([k])=>{const v=V(k);$('v_'+k).textContent=(v>0&&['ev','ct','sa','tp','tn','to','lm','lt','ln','mm','mt','mn','hm','ht','hn'].includes(k)?'+':'')+(k==='ev'?v.toFixed(1):k==='kn'?v.toFixed(2):v)});preview()};
-SL.forEach(([k])=>$(k).oninput=upd);['ro','cl','pr'].forEach(k=>$(k).oninput=preview);
-$('rs').onclick=()=>{SL.forEach(([k,,,,d])=>$(k).value=d);$('ro').checked=$('cl').checked=false;upd()};
+SL.forEach(([k])=>$(k).oninput=upd);['ro','cl','pr','rg'].forEach(k=>$(k).oninput=preview);
+$('rs').onclick=()=>{SL.forEach(([k,,,,d])=>$(k).value=d);$('ro').checked=$('cl').checked=false;$('tcp').value='';upd()};
 $('cp').onclick=async()=>{try{await navigator.clipboard.writeText(build());$('note').textContent='Copied. Paste into a text file and name it .'+$('ff').value+'.'}catch(e){$('note').textContent='Copy blocked here; use Save instead.'}};
 $('sv').onclick=async()=>{const dl=typeof claude!=='undefined'?await claude.use('downloads'):{save:async({filename,data})=>{const u=URL.createObjectURL(data),l=document.createElement('a');l.href=u;l.download=filename;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}};
  if(!dl){$('note').textContent='Saving is unavailable in this view; use Copy instead.';return}
