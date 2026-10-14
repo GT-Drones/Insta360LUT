@@ -1,7 +1,14 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>I-Log LUT Tuner</title>
+<title>Insta360 I-Log LUT Generator: Free .cube and .3dl Tool (Unofficial)</title>
+<meta name="description" content="Free, in-browser Insta360 I-Log LUT tool. Build and tune .cube or .3dl LUTs for Rec.709, Rec.2020, HLG or PQ with exposure, white balance and live scopes. Unofficial.">
+<link rel="canonical" href="https://gt-drones.github.io/Insta360LUT/">
+<meta property="og:type" content="website"><meta property="og:url" content="https://gt-drones.github.io/Insta360LUT/">
+<meta property="og:title" content="Insta360 I-Log LUT Generator: Free .cube and .3dl Tool (Unofficial)"><meta property="og:description" content="Free, in-browser Insta360 I-Log LUT tool. Build and tune .cube or .3dl LUTs for Rec.709, Rec.2020, HLG or PQ with exposure, white balance and live scopes. Unofficial.">
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="Insta360 I-Log LUT Generator: Free .cube and .3dl Tool (Unofficial)"><meta name="twitter:description" content="Free, in-browser Insta360 I-Log LUT tool. Build and tune .cube or .3dl LUTs for Rec.709, Rec.2020, HLG or PQ with exposure, white balance and live scopes. Unofficial.">
+<!-- Paste your Google Search Console verification meta tag here -->
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Insta360 I-Log LUT Generator (Unofficial)","url":"https://gt-drones.github.io/Insta360LUT/","applicationCategory":"MultimediaApplication","operatingSystem":"Any","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free, in-browser Insta360 I-Log LUT tool. Build and tune .cube or .3dl LUTs for Rec.709, Rec.2020, HLG or PQ with exposure, white balance and live scopes. Unofficial."}</script>
 <style>
 :root{--bg:#fafaf8;--fg:#1c1c1a;--mu:#6b6b66;--card:#fff;--bd:#dcdcd6;--ac:#d9480f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161615;--fg:#ecece8;--mu:#9a9a94;--card:#201f1e;--bd:#3a3936;--ac:#ff8a4c}}
@@ -23,16 +30,16 @@ button.g{background:transparent;color:var(--fg);border:1px solid var(--bd)}butto
 #hist{height:110px;border-radius:6px;margin-top:8px;width:100%}.sc{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.sc canvas{width:100%;height:auto;border-radius:6px;background:#111}.dz.over{outline:2px dashed var(--ac)}#clip{font-size:13px;margin-top:4px}
 @media (max-width:899px){.pvw{margin:0 -8px 12px}}
 .lay{display:flex;flex-direction:column}.pvw{order:-1;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:10px;margin-bottom:12px}
-summary.s{cursor:pointer;margin:6px 0}
+a{color:var(--ac)}h2{font-size:17px;margin:0 0 8px}h3{font-size:14px;margin:14px 0 4px}#about p{margin:0 0 6px;font-size:14px;color:var(--mu)}summary.s{cursor:pointer;margin:6px 0}
 @media (min-width:900px){.lay{display:grid;grid-template-columns:minmax(0,1fr) 460px;gap:16px;align-items:start}.pvw{order:0;grid-column:2;grid-row:1;top:12px;max-height:calc(100vh - 24px);overflow:auto;margin-bottom:0}.col{grid-column:1;grid-row:1;min-width:0}}
 #st{font-size:13px;color:var(--mu);margin-top:8px}
 </style></head><body><main>
-<h1>I-Log LUT Tuner</h1>
-<p class="s">Takes Insta360's official I-Log .cube and adds exposure, highlight rolloff, clamping and resizing, like GoPro's GP-Log2 generator.</p>
+<h1>Insta360 I-Log LUT Tool</h1>
+<p class="s">Free, unofficial tool to build and tune .cube and .3dl LUTs for Insta360 I-Log footage. It runs in your browser and nothing is uploaded.</p>
 
 <div class="lay"><div class="col">
 <div class="c" id="lc"><b>1. Load official LUT</b> (for LUT mode, or to match in direct mode)
-<p class="s" style="margin:4px 0 8px">Download the official I-Log LUT for your camera from Insta360's Downloads page, then pick the .cube here.</p>
+<p class="s" style="margin:4px 0 8px">Download the official I-Log LUT for your camera from <a href="https://www.insta360.com/download/i-log" target="_blank" rel="noopener">Insta360's I-Log downloads page</a>, then pick the .cube here.</p>
 <input type="file" id="lf" accept=".cube,.txt"><div id="st">No LUT loaded.</div><button class="g" id="ft" disabled style="margin-top:8px">Match official LUT</button><div id="fr" class="s" style="margin-top:6px"></div></div>
 
 <div class="c"><b>2. Settings</b>
@@ -69,6 +76,19 @@ summary.s{cursor:pointer;margin:6px 0}
 <div class="sc"><div><canvas id="wf" width="255" height="128"></canvas><div class="s">Luma waveform</div></div><div><canvas id="vc" width="128" height="128"></canvas><div class="s">Vectorscope</div></div></div></details>
 </aside>
 </div>
+
+<section class="c" id="about" style="margin-top:12px"><h2>About this Insta360 I-Log LUT tool</h2>
+<p>This free tool creates and tunes 3D LUTs for footage shot in Insta360 I-Log. You can start from Insta360's official LUT and add exposure, white balance, contrast, saturation, lift/gamma/gain and highlight rolloff, or build a LUT directly from the I-Log curve. Output can be Rec.709, Rec.2020 SDR, HLG or PQ, exported as .cube or .3dl. It was inspired by GoPro Labs' GP-Log2 LUT generator.</p>
+<h3>How do I use it?</h3>
+<p>Optionally load the official I-Log LUT, choose a mode, adjust the sliders while watching the preview and scopes, then press Save as .zip and load the .cube in your editor. Set your footage to I-Log first.</p>
+<h3>Does it work with the Insta360 X5?</h3>
+<p>The curve and color gamut in this tool come from Insta360's published 10-bit I-Log white paper, which covers the Luna series and other newer cameras. Whether the X5's I-Log uses exactly the same curve has not been confirmed. If you have the official LUT for your camera, load it and press Match official LUT to see how closely they agree, and check the result on your own footage.</p>
+<h3>Where do I get the official Insta360 I-Log LUTs?</h3>
+<p>From <a href="https://www.insta360.com/download/i-log" target="_blank" rel="noopener">Insta360's I-Log downloads page</a>.</p>
+<h3>Is my footage uploaded?</h3>
+<p>No. Everything runs locally in your browser.</p>
+<h3>Is this official?</h3>
+<p>No. This is an independent, unofficial tool and is not affiliated with Insta360 or GoPro. It was written with the help of AI and has not been tested on all footage, so check results before relying on them. Source code and notes are on <a href="https://github.com/gt-drones/Insta360LUT" target="_blank" rel="noopener">GitHub</a>.</p></section>
 </main>
 <script>
 let base=null,img=null,pvAuto=false;const $=id=>document.getElementById(id);

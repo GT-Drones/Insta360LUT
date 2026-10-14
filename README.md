@@ -2,6 +2,8 @@
 
 A single-page, in-browser tool for making `.cube` and `.3dl` LUTs from Insta360 I-Log footage. It is inspired by GoPro Labs' GP-Log2 LUT Generator. Everything runs locally in your browser: your LUTs, images and videos are never uploaded.
 
+**Live tool:** https://gt-drones.github.io/Insta360LUT/
+
 > Not affiliated with Insta360 or GoPro.
 
 ## What it does
