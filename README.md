@@ -48,7 +48,7 @@ Put `index.html` in the root of a public repo, then go to **Settings → Pages**
 
 ## How AI was used
 
-This tool was written with **Claude**, an AI assistant made by Anthropic, in a single conversation. The author described what they wanted and directed the work. Claude researched the I-Log specification, wrote the code, and tested the maths with scripts. This included checking the curve against the white paper's table, confirming that an identity LUT round-trips exactly, checking `.3dl` ordering and validating the `.zip` output.
+This tool was written with **Claude**, an AI assistant made by Anthropi.
 
 Please treat the code accordingly:
 
