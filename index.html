@@ -115,7 +115,7 @@ function samp(L,r,g,b,o){const n=L.n,m=n-1,c=[r,g,b].map((v,i)=>Math.min(1,Math.
   else{p1=at(0,0,1);p2=at(0,1,1);w=[1-fz,fz-fy,fy-fx,fx]}}
  const P=[at(0,0,0),p1,p2,at(1,1,1)],d=L.d;
  for(let k=0;k<3;k++)o[k]=w[0]*d[P[0]+k]+w[1]*d[P[1]+k]+w[2]*d[P[2]+k]+w[3]*d[P[3]+k]}
-const SL=[['ev','EV compensation',-2,4,0,.1],['ct','Contrast',-50,50,0,1],['sa','Saturation',-100,100,0,1],['tp','Temperature (cool ↔ warm)',-100,100,0,1],['tn','Tint (green ↔ magenta)',-100,100,0,1],['sh','Shadow lift',0,50,0,1],['kn','Shoulder start (with rolloff)',0.2,0.95,0.8,0.01],['to','Gamma (shadow contrast)',-50,50,0,1],['st','Adjustment strength (%)',0,100,100,1],
+const SL=[['ev','EV compensation',-2,4,0,.1],['ct','Contrast',-50,50,0,1],['sa','Saturation',-100,100,0,1],['tp','Temperature (cool ↔ warm)',-100,100,0,1],['tn','Tint (green ↔ magenta)',-100,100,0,1],['sh','Shadow lift',0,50,0,1],['kn','Shoulder start (with rolloff)',0.2,0.95,0.8,0.01],['to','Gamma (shadow contrast)',-50,50,0,1],['str','Adjustment strength (%)',0,100,100,1],
 ['lm','Shadows: brightness',-50,50,0,1],['lt','Shadows: cool ↔ warm',-50,50,0,1],['ln','Shadows: green ↔ magenta',-50,50,0,1],
 ['mm','Mids: brightness',-50,50,0,1],['mt','Mids: cool ↔ warm',-50,50,0,1],['mn','Mids: green ↔ magenta',-50,50,0,1],
 ['hm','Highlights: brightness',-50,50,0,1],['ht','Highlights: cool ↔ warm',-50,50,0,1],['hn','Highlights: green ↔ magenta',-50,50,0,1]];
@@ -134,7 +134,7 @@ function opts(){const F=OV!==null,dir=F||$('md').value==='dir',tp=G('tp')/100*0.
  const lg=[chn(G('lm'),G('lt'),G('ln')),chn(G('mm'),G('mt'),G('mn')),chn(G('hm'),G('ht'),G('hn'))];
  const O={dir,o2020:dir&&ot!=='709',hs:ot==='hlg'?0.265:ot==='pq'?0.203:1,oe:ot==='hlg'?hlgEnc:ot==='pq'?pqEnc:enc,pv:ot==='hlg'?0.38:ot==='pq'?0.41:0.45,
   rg:!F&&$('rg').value==='legal',pre:$('pr').checked,w:[g*Math.pow(2,tp),g*Math.pow(2,-tn),g*Math.pow(2,-tp)],ro:F||$('ro').checked,cl:F||$('cl').checked,sh:G('sh')/100*0.3,cf:1+G('ct')/100,sa:1+G('sa')/100,kn:G('kn'),gm:1+G('to')/100*0.5,
-  lg,lgOn:lg.some(a=>a.some(v=>v!==0)),str:F?1:G('st')/100};
+  lg,lgOn:lg.some(a=>a.some(v=>v!==0)),str:F?1:G('str')/100};
  O.O0={...O,w:[1,1,1],ro:false,cl:false,sh:0,cf:1,sa:1,gm:1,lgOn:false,str:1};return O}
 function tail(L,O,out){const e=[0,1,2].map(i=>{let l=L[i];
   if(l>0&&O.gm!==1)l=Math.pow(l,O.gm);l*=O.hs;if(O.ro){const k=O.kn;if(l>k)l=k+(1-k)*(1-Math.exp(-(l-k)/(1-k)))}
